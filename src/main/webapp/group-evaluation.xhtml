@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui" xmlns:f="http://java.sun.com/jsf/core">
+
+<h:head>
+    <title>Gruppenabgabe bewerten</title>
+</h:head>
+<h:body>
+    <ui:composition template="WEB-INF/template.xhtml">
+        <ui:define name="content">
+            <h:outputText value="Veranstaltung nicht gefunden oder unzureichende Berechtigung oder keine Gruppenarbeit!"
+                          rendered="#{groupEvaluationBean.role == null or groupEvaluationBean.root == null or groupEvaluationBean.submission.groupWork != true}"/>
+            <h:form id="form"
+                    rendered="#{groupEvaluationBean.role != null and groupEvaluationBean.root != null}">
+                <p:growl id="growl" showDetail="true"/>
+
+                <p:panel header="Gruppe:">
+                    <h:panelGrid columns="2">
+                        <p:outputLabel value="Name der Gruppe: "/>
+                        <p:outputLabel id="nameG" value="#{groupEvaluationBean.group.name}"/>
+
+                        <p:outputLabel for="number" value="Nummer der Gruppe: "/>
+                        <p:outputLabel id="number" value="#{groupEvaluationBean.group.number}"/>
+
+                        <p:outputLabel value="Maximale Personen: "/>
+                        <p:outputLabel id="maxPa" value="#{groupEvaluationBean.group.maxPa}"/>
+                    </h:panelGrid>
+                </p:panel>
+
+                <p:panel header="Abgabe">
+                    <p:commandButton value="Hinzufügen" action="#{groupEvaluationBean.createEvaluations}"/>
+                    <p:commandButton value="Löschen" action="#{groupEvaluationBean.deleteAllEvaluations}">
+                        <p:confirm header="Bestätigung" message="Willst du die Bewertung von allen Aufgaben dieser Abgabe löschen?"
+                                   icon="pi pi-exclamation-triangle"/>
+                    </p:commandButton>
+                    <p:button value="Abbrechen" outcome="submission.xhtml">
+                        <f:param name="submission-Id" value="#{groupEvaluationBean.submission.id}"/>
+                    </p:button>
+                    <h:panelGrid columns="3">
+                        <p:outputLabel value="Name der Abgabe: "/>
+                        <p:inputText id="name"
+                                     value="#{groupEvaluationBean.submission.name}" disabled="true"/>
+                        <p:message for="name"/>
+                        <p:outputLabel for="date" value="Datum der Abgabe: "/>
+                        <p:calendar id="date" value="#{groupEvaluationBean.submission.date}" locale="de"
+                                    navigator="true"
+                                    pattern="dd.MM.yyyy" disabled="true"/>
+                        <p:message for="date"/>
+
+                        <p:outputLabel value="Punkte der Abgabe: "/>
+                        <p:inputNumber id="maxGr"
+                                       value="#{groupEvaluationBean.evaluation.points}"
+                                       minValue="0"/>
+                        <h:outputText value=" / #{groupEvaluationBean.submission.maxGrade}"
+                                      style="margin-left: -150px"/>
+
+                        <p:outputLabel value="Note:"/>
+                        <p:inputNumber id="grade" value="#{groupEvaluationBean.evaluation.grade}" minValue="0" maxValue="5"/>
+                        <p:commandButton value="Berechnen" action="#{groupEvaluationBean.calculateGrade}" update="grade"/>
+
+                        <p:outputLabel value="Gewichtung der Abgabe: "/>
+                        <p:inputText id="weighting"
+                                     value="#{groupEvaluationBean.submission.weighting}" disabled="true"/>
+                        <p:message for="weighting"/>
+
+                        <p:outputLabel value="Kommentar: "/>
+                        <p:inputTextarea id="comment" rows="4" cols="40"
+                                         value="#{groupEvaluationBean.evaluation.comment}"/>
+                        <p:message for="comment"/>
+
+                    </h:panelGrid>
+                </p:panel>
+
+                <p:treeTable value="#{groupEvaluationBean.root}" var="t" id="treeTable" style="margin-top: 15px">
+                    <p:ajax event="collapse" listener="#{groupEvaluationBean.onNodeCollapse}"/>
+                    <p:column headerText="Name" style="width: 250px">
+                        <h:outputText value="#{t.task.name}"/>
+                    </p:column>
+                    <p:column headerText="Nummer" style="width: 70px">
+                        <h:outputText value="#{t.task.number}"/>
+                    </p:column>
+                    <p:column headerText="Punkte" style="width: 80px">
+                        <h:outputText value="#{t.evaluation.points} / #{t.task.points}"/>
+                    </p:column>
+                    <p:column headerText="Gewichtung" style="width: 80px">
+                        <h:outputText value="#{t.task.weighting}"/>
+                    </p:column>
+                    <p:column headerText="Kriterien"
+                              style="word-wrap: break-word; white-space: normal; min-width: 200px">
+                        <h:outputText value="#{t.task.criteria}"/>
+                    </p:column>
+                    <p:column headerText="Kommentar">
+                        <h:outputText value="#{t.evaluation.comment}"/>
+                    </p:column>
+                    <p:column style="width: 60px; text-align: center">
+                        <p:commandButton actionListener="#{groupEvaluationBean.copyEvaluation(t)}"
+                                         icon="pi pi-pencil"
+                                         update=":form:edit-task" oncomplete="PF('task').show()"
+                                         process="@this">
+                            <p:resetInput target=":form:edit-task"/>
+                        </p:commandButton>
+                        <p:commandButton icon="pi pi-times"
+                                         actionListener="#{groupEvaluationBean.deleteSubEvaluation(t)}"
+                                         update=":form:growl :form:maxGr treeTable">
+                            <p:confirm header="Bestätigung" message="Willst die Bewertung dieser Aufgabe löschen?"
+                                       icon="pi pi-exclamation-triangle"/>
+                        </p:commandButton>
+                        <p:confirmDialog global="true" showEffect="fade" hideEffect="fade" responsive="true">
+                            <p:commandButton value="Ja" type="button" styleClass="ui-confirmdialog-yes"/>
+                            <p:commandButton value="Nein" type="button" styleClass="ui-confirmdialog-no ui-button-flat"/>
+                        </p:confirmDialog>
+                    </p:column>
+                </p:treeTable>
+                <p:dialog header="Aufgabe bewerten" widgetVar="task" width="450" showEffect="fade" modal="true"
+                          responsive="true"
+                          closable="false">
+                    <p:outputPanel id="edit-task" styleClass="ui-fluid">
+                        <p:outputPanel rendered="#{not empty groupEvaluationBean.selectedEvaluation}">
+                            <div class="ui-g-12">
+                                <p:outputLabel for="tCriteria">Bewertungskriterien</p:outputLabel>
+                                <p:inputTextarea id="tCriteria"
+                                                 value="#{groupEvaluationBean.selectedEvaluation.task.criteria}"
+                                                 disabled="true"/>
+                            </div>
+                            <div class="ui-g-12">
+                                <p:outputLabel for="tComment">Kommentar</p:outputLabel>
+                                <p:inputTextarea id="tComment"
+                                                 value="#{groupEvaluationBean.selectedEvaluation.comment}"/>
+                            </div>
+                            <div class="ui-g-6">
+                                <h:outputLabel for="tPoints">Punkte</h:outputLabel>
+                                <p:inputNumber emptyValue="0" required="true" id="tPoints"
+                                               value="#{groupEvaluationBean.selectedEvaluation.points}"
+                                               disabled="#{groupEvaluationBean.selectedEvaluation.task.tasks.size() != 0}"/>
+                            </div>
+                            <div class="ui-g-6">
+                                <p:outputLabel for="tMaxPoints">Maximale Punkte</p:outputLabel>
+                                <p:inputText id="tMaxPoints"
+                                             value="#{groupEvaluationBean.selectedEvaluation.task.points}"
+                                             disabled="true"/>
+                            </div>
+                            <div class="ui-g-6">
+                                <p:outputLabel for="tWeighting">Gewichtung</p:outputLabel>
+                                <p:inputNumber emptyValue="0" symbolPosition="s" symbol="%" id="tWeighting"
+                                               value="#{groupEvaluationBean.selectedEvaluation.task.weighting}"
+                                               disabled="true"/>
+                            </div>
+                        </p:outputPanel>
+                    </p:outputPanel>
+                    <f:facet name="footer">
+                        <p:commandButton value="Speichern" icon="pi pi-check"
+                                         actionListener="#{groupEvaluationBean.dialogEdit}"
+                                         update="treeTable :form:growl :form:maxGr"
+                                         process="edit-task @this">
+                        </p:commandButton>
+                        <p:commandButton actionListener="#{groupEvaluationBean.restoreWithCopy}" value="Abbrechen"
+                                         icon="pi pi-times"
+                                         oncomplete="PF('task').hide()" update="treeTable"/>
+                    </f:facet>
+                </p:dialog>
+            </h:form>
+        </ui:define>
+    </ui:composition>
+</h:body>
+</html>

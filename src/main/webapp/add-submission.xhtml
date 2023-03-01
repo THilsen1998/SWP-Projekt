@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="http://java.sun.com/jsf/facelets">
+
+<h:head>
+    <title>Hinzufuegen einer Abgabe</title>
+</h:head>
+<h:body>
+    <ui:composition template="WEB-INF/template.xhtml">
+        <ui:define name="content">
+            <h:outputText value="Veranstaltung nicht gefunden oder unzureichende Berechtigung!"
+                          rendered="#{addSubmissionBean.submission == null}"/>
+            <h:form id="form" rendered="#{addSubmissionBean.submission != null}">
+
+                <p:remoteCommand name="edit" action="#{addSubmissionBean.dialogEdit}"/>
+                <p:growl id="growl" showDetail="true"/>
+                <p:panel header="Abgabe">
+                    <p:commandButton value="Aufgabe erstellen" action="#{addSubmissionBean.createSubmission}"
+                                     update=":form:growl"/>
+                    <p:button value="Abbrechen" outcome="meeting.xhtml?meeting-Id=#{addSubmissionBean.meeting.id}"/>
+                    <h:panelGrid columns="3">
+                        <p:outputLabel value="Name der Abgabe: "/>
+                        <p:inputText id="name"
+                                     value="#{addSubmissionBean.submission.name}"/>
+                        <p:message for="name"/>
+
+                        <p:outputLabel for="date" value="Datum der Abgabe: "/>
+                        <p:calendar id="date" value="#{addSubmissionBean.submission.date}" locale="de" navigator="true"
+                                    pattern="dd.MM.yyyy"/>
+                        <p:message for="date"/>
+
+                        <p:outputLabel value="Maximale Punkte der Abgabe: "/>
+                        <p:inputNumber emptyValue="0" id="maxGr" minValue="0"
+                                       value="#{addSubmissionBean.submission.maxGrade}"/>
+                        <p:message for="maxGr"/>
+
+                        <p:outputLabel value="Gewichtung der Abgabe: "/>
+                        <p:inputNumber emptyValue="1" id="weighting"
+                                       value="#{addSubmissionBean.submission.weighting}"/>
+                        <p:message for="weighting"/>
+                        <p:outputLabel value="Gruppenarbeit: "/>
+                        <p:selectOneRadio id="groupWork" value="#{addSubmissionBean.submission.groupWork}"
+                                          unselectable="false" required="true">
+                            <f:selectItem itemLabel="Ja" itemValue="#{true}"/>
+                            <f:selectItem itemLabel="Nein" itemValue="#{false}"/>
+                        </p:selectOneRadio>
+                    </h:panelGrid>
+                    <p:commandButton value="Aufgabe hinzufügen" action="#{addSubmissionBean.addTask}" update="form"
+                                     style="margin-top: 10px"/>
+                </p:panel>
+                <p:staticMessage severity="info" summary="INFO"
+                                 detail="Die Punkte werden mit der Gewichtung multipliziert."
+                                 style="width: 100%"/>
+                <p:remoteCommand name="onRowEdit" update="form:treeTable"/>
+                <p:treeTable value="#{addSubmissionBean.root}" var="t" id="treeTable" style="margin-top: 15px">
+                    <p:ajax event="collapse" listener="#{addSubmissionBean.onNodeCollapse}"/>
+                    <p:column headerText="Name" style="width: 250px">
+                        <h:outputText value="#{t.name}"/>
+                    </p:column>
+                    <p:column headerText="Nummer" style="width: 70px">
+                        <h:outputText value="#{t.number}"/>
+                    </p:column>
+                    <p:column headerText="Max Punkte" style="width: 80px">
+                        <h:outputText value="#{t.points}"/>
+                    </p:column>
+                    <p:column headerText="Gewichtung" style="width: 80px">
+                        <h:outputText value="#{t.weighting}"/>
+                    </p:column>
+                    <p:column headerText="Kriterien"
+                              style="word-wrap: break-word; white-space: normal; min-width: 200px">
+                        <h:outputText value="#{t.criteria}"/>
+                    </p:column>
+                    <p:column style="width: 50px; text-align: center">
+                        <p:commandButton actionListener="#{addSubmissionBean.copyTask(t)}" icon="pi pi-pencil"
+                                         update=":form:edit-task" oncomplete="PF('task').show()"
+                                         process="@this">
+                            <p:resetInput target=":form:edit-task"/>
+                        </p:commandButton>
+                    </p:column>
+                    <p:column style="width: 150px; text-align: center">
+                        <p:defaultCommand target="dummy"/>
+                        <p:commandButton id="dummy" process="@none" global="false" style="display: none"/>
+                        <p:commandButton icon="pi pi-sort-up" action="#{addSubmissionBean.sortUp(t)}"
+                                         update="treeTable"/>
+                        <p:commandButton icon="pi pi-sort-down" action="#{addSubmissionBean.sortDown(t)}"
+                                         update="treeTable"/>
+                        <p:commandButton icon="pi pi-plus" action="#{addSubmissionBean.addSubTask(t)}"
+                                         update="treeTable :form:maxGr" style="margin-left: 10px"/>
+                        <p:commandButton icon="pi pi-trash" action="#{addSubmissionBean.deleteTask(t)}"
+                                         update="treeTable :form:maxGr"/>
+                    </p:column>
+                </p:treeTable>
+                <p:dialog header="Aufgabe" widgetVar="task" width="450" showEffect="fade" modal="true" responsive="true"
+                          closable="false">
+                    <p:outputPanel id="edit-task" styleClass="ui-fluid">
+                        <p:outputPanel rendered="#{not empty addSubmissionBean.selectedTask}">
+                            <div class="ui-g-12">
+                                <p:outputLabel for="tName">Name</p:outputLabel>
+                                <p:inputText id="tName" value="#{addSubmissionBean.selectedTask.name}"/>
+                            </div>
+                            <div class="ui-g-6">
+                                <p:outputLabel for="tPoints">Punkte</p:outputLabel>
+                                <p:inputNumber emptyValue="0" id="tPoints"
+                                               value="#{addSubmissionBean.selectedTask.points}"
+                                               disabled="#{addSubmissionBean.selectedTask.tasks.size() != 0}"/>
+                            </div>
+                            <div class="ui-g-6">
+                                <p:outputLabel for="tWeighting">Gewichtung</p:outputLabel>
+                                <p:inputNumber emptyValue="1" id="tWeighting"
+                                               value="#{addSubmissionBean.selectedTask.weighting}"/>
+                            </div>
+                            <div class="ui-g-12">
+                                <p:outputLabel for="tCriteria">Bewertungskriterien</p:outputLabel>
+                                <p:inputTextarea id="tCriteria" value="#{addSubmissionBean.selectedTask.criteria}"/>
+                            </div>
+                        </p:outputPanel>
+                    </p:outputPanel>
+                    <f:facet name="footer">
+                        <p:commandButton value="Speichern" icon="pi pi-check"
+                                         actionListener="#{addSubmissionBean.dialogEdit}"
+                                         update="treeTable :form:growl :form:maxGr"
+                                         process="edit-task @this">
+                        </p:commandButton>
+                        <p:commandButton actionListener="#{addSubmissionBean.restoreWithCopy}" value="Abbrechen"
+                                         icon="pi pi-times"
+                                         oncomplete="PF('task').hide()" update="treeTable"/>
+                    </f:facet>
+                </p:dialog>
+            </h:form>
+        </ui:define>
+    </ui:composition>
+</h:body>
+</html>

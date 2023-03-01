@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+
+<h:head>
+    <title>Ändern eines Tutoriums</title>
+</h:head>
+<h:body>
+    <ui:composition template="WEB-INF/template.xhtml">
+        <ui:define name="content">
+            <h:outputText value="Unkeanntes Tutorium"
+                          rendered="#{editTutorialBean.role == null}"/>
+            <h:panelGroup layout="block" rendered="#{editTutorialBean.role != null}">
+            <h:form>
+                <p:panel header="Tutorium bearbeiten:">
+                    <h:form>
+                        <p:growl id="growl" showDetail="true" life="7000"/>
+                        <h:panelGrid columns="2">
+                            <p:commandButton value="Ändern"
+                                             action="#{editTutorialBean.update}" ajax="false" update="growl"/>
+                            <p:button value="Abbrechen" outcome="single-tutorial.xhtml?tutorial-Id=#{editTutorialBean.tutorial.id}"/>
+                        </h:panelGrid>
+                        <p:panelGrid columns="3" styleClass="ui-noborder" rendered="#{editTutorialBean.role != 'T'}">
+                            <p:outputLabel value="Name:"/>
+                            <p:inputText id="name"
+                                         value="#{editTutorialBean.tutorial.name}"/>
+                            <p:message for="name"/>
+
+                            <p:outputLabel for="date" value="Datum:"/>
+                            <p:calendar id="date" value="#{editTutorialBean.tutorial.date}" locale="de" navigator="true"
+                                        pattern="dd.MM.yyyy HH:mm:ss"/>
+                            <p:message for="date"/>
+
+                            <p:outputLabel value="Info:"/>
+                            <p:inputTextarea rows="4" cols="20" value="#{editTutorialBean.tutorial.info}"
+                                             maxlength="100"/>
+                        </p:panelGrid>
+                    </h:form>
+                </p:panel>
+            </h:form>
+
+            <p:accordionPanel id="accord" activeIndex="null">
+                <p:tab title="Tutor*in hinzufügen" rendered="#{editTutorialBean.role != 'T'}">
+                    <div class="ui-g-6">
+                        <h:form id="form1">
+                            <p:dataTable value="#{editTutorialBean.users}" var="u" id="users"
+                                         widgetVar="usersTable"
+                                         filteredValue="#{editTutorialBean.filteredUsers}"
+                                         rows="10"
+                                         paginator="true"
+                                         paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                         currentPageReportTemplate="{startRecord}-{endRecord} von {totalRecords} Dozenten">
+                                <p:column headerText="Nutzer die nicht im Tutorium sind" sortBy="#{u.firstName} #{u.lastName}"
+                                          filterBy="#{u.firstName} #{u.lastName} " filterMatchMode="contains">
+                                    <h:outputText value="#{u.firstName} #{u.lastName}"/>
+                                </p:column>
+                                <p:column style="width: 30px">
+                                    <p:commandButton value="+"
+                                                     action="#{editTutorialBean.addTutor(u)}"
+                                                     style="margin-right:20px;" ajax="true"
+                                                     update="users :accord:form2:usersToAdd">
+                                    </p:commandButton>
+                                </p:column>
+                            </p:dataTable>
+                        </h:form>
+                    </div>
+
+
+                    <div class="ui-g-6">
+                        <h:form id="form2">
+                            <p:dataTable value="#{editTutorialBean.usersToAdd}" var="u" id="usersToAdd"
+                                         filteredValue="#{editTutorialBean.filteredUsersToAdd}"
+                                         widgetVar="usersToAddTable"
+                                         rows="10"
+                                         paginator="true"
+                                         paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                         currentPageReportTemplate="{startRecord}-{endRecord} von {totalRecords} Dozenten">
+                                <p:column headerText="Tutoren die bereits im Tutorium sind"
+                                          sortBy="#{u.firstName} #{u.lastName}" filterBy="#{u.firstName} #{u.lastName}"
+                                          filterMatchMode="contains">
+                                    <h:outputText value="#{u.firstName } #{u.lastName}"/>
+                                </p:column>
+                                <p:column style="width: 30px">
+                                    <p:commandButton value="-"
+                                                     action="#{editTutorialBean.deleteTutor(u)}"
+                                                     style="margin-right:20px;" ajax="true"
+                                                     update="usersToAdd :accord:form1:users">
+                                    </p:commandButton>
+                                </p:column>
+                            </p:dataTable>
+                        </h:form>
+                    </div>
+                </p:tab>
+
+                <p:tab title="Teilnehmer hinzufügen">
+                    <div class="ui-g-6">
+                        <h:form id="form3">
+                            <p:dataTable value="#{editTutorialBean.participantsInMeeting}" var="p" id="participants"
+                                         widgetVar="parTable"
+                                         filteredValue="#{editTutorialBean.filteredParticipantsInMeeting}"
+                                         rows="10"
+                                         paginator="true"
+                                         paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                         currentPageReportTemplate="{startRecord}-{endRecord} von {totalRecords} Teilnehmer">
+                                <p:column headerText="Nichtteilnehmer" sortBy="#{p.firstName} #{p.lastName}"
+                                          filterBy="#{p.firstName} #{p.lastName} " filterMatchMode="contains">
+                                    <h:outputText value="#{p.firstName} #{p.lastName}"/>
+                                </p:column>
+                                <p:column style="width: 30px">
+                                    <p:commandButton value="+" id="nonAjax1"
+                                                     action="#{editTutorialBean.addParticipant(p)}"
+                                                     style="margin-right:20px;" ajax="true"
+                                                     update="participants :accord:form4:participantsToAdd">
+                                    </p:commandButton>
+                                </p:column>
+                            </p:dataTable>
+                        </h:form>
+                    </div>
+
+                    <div class="ui-g-6">
+                        <h:form id="form4">
+                            <p:dataTable value="#{editTutorialBean.participantsToAdd}" var="p" id="participantsToAdd"
+                                         filteredValue="#{editTutorialBean.filteredParticipantsToAdd}"
+                                         widgetVar="parToAddTable"
+                                         rows="10"
+                                         paginator="true"
+                                         paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                         currentPageReportTemplate="{startRecord}-{endRecord} von {totalRecords} Teilnehmer">
+                                <p:column headerText="Teilnehmer" sortBy="#{p.firstName} #{p.lastName}"
+                                          filterBy="#{p.firstName} #{p.lastName}" filterMatchMode="contains">
+                                    <h:outputText value="#{p.firstName } #{p.lastName}"/>
+                                </p:column>
+                                <p:column style="width: 30px">
+                                    <p:commandButton value="-" id="nonAjax2"
+                                                     action="#{editTutorialBean.deleteParticipant(p)}"
+                                                     style="margin-right:20px;" ajax="true"
+                                                     update="participantsToAdd :accord:form3:participants">
+                                    </p:commandButton>
+                                </p:column>
+                            </p:dataTable>
+                        </h:form>
+                    </div>
+                </p:tab>
+            </p:accordionPanel>
+            </h:panelGroup>
+        </ui:define>
+    </ui:composition>
+</h:body>
+</html>
+

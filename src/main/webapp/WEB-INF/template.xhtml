@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+
+<h:head>
+</h:head>
+<h:body>
+    <div class="ui-g">
+        <div class="ui-g-12">
+            <h:form>
+                <p:toolbar>
+                    <f:facet name="left">
+                        <!--                            <p:linkButton value="Home" outcome="home.xhtml" />-->
+                        <!--                            <p:linkButton value="Hinzufügen" outcome="edit-user.xhtml"/>-->
+                    </f:facet>
+                    <f:facet name="right">
+                        <h:outputText
+                                style="margin-right: 20px;"/>
+                        <p:commandButton value="Logout" ajax="false"
+                                         action="#{templateBean.logout}"/>
+                    </f:facet>
+
+                    <f:facet name="right">
+                        <p:growl id="messages" showDetail="true"/>
+                        <p:menuButton>
+                            <p:menuitem value="Persönliche Angaben " outcome="personalDetails.xhtml"/>
+                            <p:menuitem value="Einstellung" outcome="config.xhtml"/>
+                            <p:separator/>
+                            <p:menuitem value="Home-Seite" outcome="home.xhtml" icon="pi pi-home"/>
+                        </p:menuButton>
+                    </f:facet>
+                    <f:facet name="left">
+                        <p:link outcome="home.xhtml">
+                            <p:outputLabel value=" IgradeBook® " style="font-weight:bold ; font-family: American Typewriter, serif;
+                         font-size: 35px;"/>
+                        </p:link>
+                    </f:facet>
+                </p:toolbar>
+
+                <p:menubar>
+                    <p:submenu label="Veranstaltungen">
+                        <p:menuitem value="Meine Veranstaltungen" outcome="home.xhtml"/>
+                        <p:separator/>
+                        <p:menuitem value="Veranstaltung hinzufügen" outcome="add-meeting.xhtml"
+                                    rendered="#{request.isUserInRole('A') || request.isUserInRole('D')}"/>
+                    </p:submenu>
+                    <p:submenu label="Teilnehmer">
+                        <p:menuitem value="Alle Teilnehmer" outcome="participants.xhtml"/>
+                        <p:separator/>
+                        <p:menuitem value="Teilnehmer hinzufügen" outcome="add-participant.xhtml"/>
+                    </p:submenu>
+                    <p:submenu label="Nutzer" rendered="#{request.isUserInRole('A')}">
+                        <p:menuitem value="Alle Nutzer" outcome="users.xhtml"/>
+                        <p:separator/>
+                        <p:menuitem value="Nutzer hinzufügen" outcome="add-user.xhtml"/>
+                    </p:submenu>
+                </p:menubar>
+
+            </h:form>
+        </div>
+        <div class="ui-g-2"></div>
+        <div class="ui-g-8">
+            <ui:insert name="content"/>
+        </div>
+        <div class="ui-g-2"></div>
+    </div>
+</h:body>
+</html>
+
+
+

@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+<h:head>
+    <title>Exam Evaluation</title>
+</h:head>
+<h:body>
+    <ui:composition template="WEB-INF/template.xhtml">
+        <ui:define name="content">
+            <p:growl id="growl" showDetail="true"/>
+            <h:outputText value="Prüfung nicht gefunden" rendered="#{examEvaluationBean.role == null}"/>
+            <h:form id="form" rendered="#{examEvaluationBean.role != null}">
+                <p:panel header="Prüfung">
+                    <p:button value="Zurück" outcome="meeting.xhtml">
+                        <f:param name="meeting-Id" value="#{examEvaluationBean.meeting.id}"/>
+                    </p:button>
+                    <p:panelGrid columns="2" styleClass="ui-noborder"
+                                 rendered="#{examEvaluationBean.role != 'T'}">
+                        <p:outputLabel value="Name: "/>
+                        <h:outputText value="#{examEvaluationBean.exam.name}"/>
+
+                        <p:outputLabel value="Ort: "/>
+                        <h:outputText value="#{examEvaluationBean.exam.location}"/>
+
+                        <p:outputLabel value="Datum: "/>
+                        <h:outputText value="#{examEvaluationBean.exam.date}">
+                            <f:convertDateTime locale="de"/>
+                        </h:outputText>
+
+                        <p:outputLabel value="Gewichtung: "/>
+                        <h:outputText value="#{examEvaluationBean.exam.weighting} %"/>
+                    </p:panelGrid>
+                    <p:commandButton value="Prüfung löschen" action="#{examEvaluationBean.deleteExam}" update="growl"
+                                     rendered="#{examEvaluationBean.role == 'A' || examEvaluationBean.role == 'D'}"/>
+                    <p:button icon="pi pi-pencil" outcome="edit-exam.xhtml"
+                              rendered="#{examEvaluationBean.role == 'A' || examEvaluationBean.role == 'D'}">
+                        <f:param name="exam-Id" value="#{examEvaluationBean.exam.id}"/>
+                    </p:button>
+                </p:panel>
+                <h:commandButton value="CSV Export"
+                                 rendered="#{examEvaluationBean.role == 'A' || examEvaluationBean.role == 'D'}">
+                    <p:dataExporter target="products1" type="csv" pageOnly="true" fileName="Pruefungsnoten"/>
+                </h:commandButton>
+                <p:dataTable id="products1" var="e" value="#{examEvaluationBean.evaluation}" editable="true"
+                             style="margin-bottom:20px">
+                    <p:ajax event="rowEdit" listener="#{examEvaluationBean.onRowEdit}" update="growl"/>
+                    <p:ajax event="rowEditInit" listener="#{examEvaluationBean.onRowEditInit}"/>
+
+                    <p:column headerText="MatrNr">
+                        <h:outputText value="#{e.participant.matrikelNr}"/>
+                    </p:column>
+
+                    <p:column headerText="Vorname">
+                        <h:outputText value="#{e.participant.firstName}"/>
+                    </p:column>
+
+                    <p:column headerText="Nachname">
+                        <h:outputText value="#{e.participant.lastName}"/>
+                    </p:column>
+
+                    <p:column headerText="Datum der Bewertung">
+                        <p:cellEditor>
+                            <f:facet name="output"><h:outputText value="#{e.evaluation.date}">
+                                <f:convertDateTime locale="de" pattern="dd.MM.yyyy - HH:mm"/>
+                            </h:outputText></f:facet>
+                            <f:facet name="input"><p:datePicker required="true" value="#{e.evaluation.date}" locale="de"
+                                                                monthNavigator="true" pattern="dd.MM.yyyy - HH:mm"
+                                                                showTime="true"/></f:facet>
+                        </p:cellEditor>
+                    </p:column>
+
+                    <p:column headerText="Prüfer">
+                        <h:outputText value="#{e.user.firstName} #{e.user.lastName}"/>
+                    </p:column>
+
+                    <p:column headerText="Note">
+                        <p:cellEditor>
+                            <f:facet name="output">
+                                <h:outputText value="#{e.evaluation.grade}"/>
+                            </f:facet>
+                            <f:facet name="input">
+                                <p:inputNumber value="#{e.evaluation.grade}" style="width:100%" label="grade"/>
+                            </f:facet>
+                        </p:cellEditor>
+                    </p:column>
+
+                    <p:column style="width:50px" exportable="false"
+                              rendered="#{examEvaluationBean.role == 'A' || examEvaluationBean.role == 'D'}">
+                        <p:rowEditor editTitle="Editieren" cancelTitle="Abbrechen" saveTitle="Speichern"/>
+                    </p:column>
+
+                    <p:column style="text-align: center; width: 50px" exportable="false"
+                              rendered="#{examEvaluationBean.role == 'A' || examEvaluationBean.role == 'D'}">
+                        <p:commandButton icon="pi pi-times" action="#{examEvaluationBean.deleteGrade(e)}"
+                                         update="products1 growl"/>
+                    </p:column>
+                </p:dataTable>
+            </h:form>
+        </ui:define>
+    </ui:composition>
+</h:body>
+</html>

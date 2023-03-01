@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://xmlns.jcp.org/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/beans_2_0.xsd"
+       version="2.0" bean-discovery-mode="all">
+
+    <interceptors>
+        <class>de.unibremen.swp2.persistence.Interceptors.LockEvaluationDAOInterceptor</class>
+        <class>de.unibremen.swp2.persistence.Interceptors.LockExamDAOInterceptor</class>
+        <class>de.unibremen.swp2.persistence.Interceptors.LockFinalGradeDAOInterceptor</class>
+        <class>de.unibremen.swp2.persistence.Interceptors.LockGroupDAOInterceptor</class>
+        <class>de.unibremen.swp2.persistence.Interceptors.LockMeetingDAOInterceptor</class>
+        <class>de.unibremen.swp2.persistence.Interceptors.LockParticipantDAOInterceptor</class>
+        <class>de.unibremen.swp2.persistence.Interceptors.LockSubmissionDAOInterceptor</class>
+        <class>de.unibremen.swp2.persistence.Interceptors.LockTaskDAOInterceptor</class>
+        <class>de.unibremen.swp2.persistence.Interceptors.LockTutorialDAOInterceptor</class>
+        <class>de.unibremen.swp2.persistence.Interceptors.LockUserDAOInterceptor</class>
+    </interceptors>
+
+    <decorators>
+        <class>de.unibremen.swp2.security.UserDAOScryptDecorator</class>
+    </decorators>
+</beans>

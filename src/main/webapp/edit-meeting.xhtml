@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+
+<h:head>
+    <title>Ändern eines Meetings</title>
+</h:head>
+
+<h:body>
+    <ui:composition template="WEB-INF/template.xhtml">
+        <ui:define name="content">
+            <h:outputText value="Veranstaltung nicht gefunden oder nicht berechtigt."
+                          rendered="#{editMeetingBean.role == null || editMeetingBean.role == 'T' || (editMeetingBean.role == 'CEO' and not editMeetingBean.meeting.visible)}"/>
+            <h:panelGroup layout="block" rendered="#{editMeetingBean.role != null and editMeetingBean.role != 'T'}">
+                <p:panel header="Ändern einer Veranstaltung">
+                    <h:form>
+                        <p:growl id="growl" showDetail="true" life="7000"/>
+                        <h:panelGrid columns="2">
+                            <p:commandButton value="Ändern"
+                                             action="#{editMeetingBean.update}" ajax="false" update="growl"/>
+                            <p:button value="Abbrechen"
+                                      outcome="meeting.xhtml?meeting-Id=#{editMeetingBean.meeting.id}"/>
+                        </h:panelGrid>
+                        <p:panelGrid columns="3" styleClass="ui-noborder" rendered="#{editMeetingBean.role != 'CEO'}">
+                            <p:outputLabel value="Name:"/>
+                            <p:inputText id="name"
+                                         value="#{editMeetingBean.meeting.name}"/>
+                            <p:message for="name"/>
+                            <p:outputLabel value="Semester :"/>
+                            <p:selectOneRadio id="Semester" value="#{editMeetingBean.meeting.wiSo}">
+                                <f:selectItem itemLabel="Winter " itemValue="true"/>
+                                <f:selectItem itemLabel="Sommer" itemValue="false"/>
+                            </p:selectOneRadio>
+                            <p:message for="Semester"/>
+
+                            <p:outputLabel value="Sichtbarkeit :"/>
+                            <p:selectOneRadio id="Sichtbarkeit" value="#{editMeetingBean.meeting.visible}">
+                                <f:selectItem itemLabel="Sichtbar" itemValue="true"/>
+                                <f:selectItem itemLabel="Unsichtbar" itemValue="false"/>
+                            </p:selectOneRadio>
+                            <p:message for="Sichtbarkeit"/>
+                        </p:panelGrid>
+                        <p:panelGrid columns="3" styleClass="ui-noborder" rendered="#{editMeetingBean.role != 'CEO'}">
+                            <p:outputLabel for="year" value="Jahr:"/>
+                            <p:datePicker id="year" view="month" value="#{editMeetingBean.meeting.year}" pattern="yyyy"
+                                          yearNavigator="true"/>
+                            <p:message for="year"/>
+                        </p:panelGrid>
+
+                        <p:panelGrid columns="2" styleClass="ui-noborder" rendered="#{editMeetingBean.role != 'CEO'}">
+                            <p:outputLabel value="Nur Gruppenteilung möglich:"/>
+                            <p:selectOneRadio id="groupWork" value="#{editMeetingBean.meeting.onlyGroupSplit}"
+                                              unselectable="false" required="true">
+                                <f:selectItem itemLabel="Ja" itemValue="true"/>
+                                <f:selectItem itemLabel="Nein" itemValue="false"/>
+                            </p:selectOneRadio>
+                        </p:panelGrid>
+
+                        <p:panelGrid columns="3" styleClass="ui-noborder" rendered="#{editMeetingBean.role != 'CEO'}">
+                            <p:outputLabel for="weighting" value="Gewichtung der Abgaben: "/>
+                            <p:inputNumber id="weighting" value="#{editMeetingBean.meeting.submissionWeighting}"
+                                           symbolPosition="s" symbol="%" minValue="0" maxValue="100"/>
+                            <p:message for="weighting"/>
+                        </p:panelGrid>
+                    </h:form>
+                </p:panel>
+
+                <p:accordionPanel id="accord" activeIndex="null">
+                    <p:tab title="CEO ändern" rendered="#{editMeetingBean.role != 'CEO'}">
+                        <div class="ui-g-6">
+                            <h:form id="form0">
+                                <p:dataTable value="#{editMeetingBean.allUsersNotInMeeting}" var="u" id="allUsers"
+                                             widgetVar="allUsersTable"
+                                             filteredValue="#{editMeetingBean.filteredAllUsersNotInMeeting}"
+                                             rows="10"
+                                             paginator="true"
+                                             paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                             currentPageReportTemplate="{startRecord}-{endRecord} von {totalRecords} Nutzern">
+                                    <p:column headerText="Alle Nutzer" sortBy="#{u.firstName} #{u.lastName}"
+                                              filterBy="#{u.firstName} #{u.lastName}" filterMatchMode="contains">
+                                        <h:outputText value="#{u.firstName} #{u.lastName}"/>
+                                    </p:column>
+                                    <p:column style="width: 30px">
+                                        <p:commandButton value="+" action="#{editMeetingBean.addCEO(u)}"
+                                                         style="margin-right:20px;" ajax="true"
+                                                         update="allUsers :accord:ceo :accord:ceoButton"/>
+                                    </p:column>
+                                </p:dataTable>
+                            </h:form>
+                        </div>
+                        <div class="ui-g-6">
+                            <p:panel header="CEO">
+                                <p:panelGrid columns="2" styleClass="ui-noborder">
+                                    <h:outputText id="ceo"
+                                                  value="#{editMeetingBean.ceoToAdd.firstName} #{editMeetingBean.ceoToAdd.lastName}"/>
+                                    <h:form id="ceoButton">
+                                        <p:commandButton value="-" action="#{editMeetingBean.deleteCEO}"
+                                                         rendered="#{editMeetingBean.ceoToAdd != null}"
+                                                         update="ceoButton :accord:ceo :accord:form0:allUsers"/>
+                                    </h:form>
+                                </p:panelGrid>
+                            </p:panel>
+                        </div>
+                    </p:tab>
+                    <p:tab title="Dozenten hinzufügen" rendered="#{editMeetingBean.role != 'CEO'}">
+                        <div class="ui-g-6">
+                            <h:form id="form1">
+                                <p:dataTable value="#{editMeetingBean.lecturersNotInMeeting}" var="u" id="users"
+                                             widgetVar="usersTable"
+                                             filteredValue="#{editMeetingBean.filteredLecturersNotInMeeting}"
+                                             rows="10"
+                                             paginator="true"
+                                             paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                             currentPageReportTemplate="{startRecord}-{endRecord} von {totalRecords} Dozenten">
+                                    <p:column headerText="Alle Dozenten" sortBy="#{u.firstName} #{u.lastName}"
+                                              filterBy="#{u.firstName} #{u.lastName} " filterMatchMode="contains">
+                                        <h:outputText value="#{u.firstName} #{u.lastName}"/>
+                                    </p:column>
+                                    <p:column style="width: 30px">
+                                        <p:commandButton value="+"
+                                                         action="#{editMeetingBean.addUser(u)}"
+                                                         style="margin-right:20px;" ajax="true"
+                                                         update="users :accord:form2:usersToAdd">
+                                        </p:commandButton>
+                                    </p:column>
+                                </p:dataTable>
+                            </h:form>
+                        </div>
+
+                        <div class="ui-g-6">
+                            <h:form id="form2">
+                                <p:dataTable value="#{editMeetingBean.usersToAdd}" var="u" id="usersToAdd"
+                                             filteredValue="#{editMeetingBean.filteredUsersToAdd}"
+                                             widgetVar="usersToAddTable"
+                                             rows="10"
+                                             paginator="true"
+                                             paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                             currentPageReportTemplate="{startRecord}-{endRecord} von {totalRecords} Dozenten">
+                                    <p:column headerText="Alle Dozenten der Veranstaltung"
+                                              sortBy="#{u.firstName} #{u.lastName}"
+                                              filterBy="#{u.firstName} #{u.lastName}"
+                                              filterMatchMode="contains">
+                                        <h:outputText value="#{u.firstName } #{u.lastName}"/>
+                                    </p:column>
+                                    <p:column style="width: 30px">
+                                        <p:commandButton value="-"
+                                                         action="#{editMeetingBean.deleteUser(u)}"
+                                                         style="margin-right:20px;" ajax="true"
+                                                         update="usersToAdd :accord:form1:users">
+                                        </p:commandButton>
+                                    </p:column>
+                                </p:dataTable>
+                            </h:form>
+                        </div>
+                    </p:tab>
+
+                    <p:tab title="Teilnehmer ändern">
+                        <div class="ui-g-6">
+                            <h:form id="form3">
+                                <p:dataTable value="#{editMeetingBean.participantsNotInMeeting}" var="p"
+                                             id="participants"
+                                             widgetVar="parTable"
+                                             filteredValue="#{editMeetingBean.filteredParticipantsNotInMeeting}"
+                                             rows="10"
+                                             paginator="true"
+                                             paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                             currentPageReportTemplate="{startRecord}-{endRecord} von {totalRecords} Teilnehmer">
+                                    <p:column headerText="Nichtteilnehmer" sortBy="#{p.firstName} #{p.lastName}"
+                                              filterBy="#{p.firstName} #{p.lastName} " filterMatchMode="contains">
+                                        <h:outputText value="#{p.firstName} #{p.lastName}"/>
+                                    </p:column>
+                                    <p:column style="width: 30px">
+                                        <p:commandButton value="+" id="nonAjax1"
+                                                         action="#{editMeetingBean.addParticipant(p)}"
+                                                         style="margin-right:20px;" ajax="true"
+                                                         update="participants :accord:form4:participantsToAdd">
+                                        </p:commandButton>
+                                    </p:column>
+                                </p:dataTable>
+                            </h:form>
+                        </div>
+
+                        <div class="ui-g-6">
+                            <h:form id="form4">
+                                <p:dataTable value="#{editMeetingBean.participantsToAdd}" var="p" id="participantsToAdd"
+                                             filteredValue="#{editMeetingBean.filteredParticipantsToAdd}"
+                                             widgetVar="parToAddTable"
+                                             rows="10"
+                                             paginator="true"
+                                             paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                             currentPageReportTemplate="{startRecord}-{endRecord} von {totalRecords} Teilnehmer">
+                                    <p:column headerText="Teilnehmer" sortBy="#{p.firstName} #{p.lastName}"
+                                              filterBy="#{p.firstName} #{p.lastName}" filterMatchMode="contains">
+                                        <h:outputText value="#{p.firstName } #{p.lastName}"/>
+                                    </p:column>
+                                </p:dataTable>
+                            </h:form>
+                        </div>
+                    </p:tab>
+                </p:accordionPanel>
+            </h:panelGroup>
+        </ui:define>
+    </ui:composition>
+</h:body>
+</html>

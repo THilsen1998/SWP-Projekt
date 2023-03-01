@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html
+        PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="http://java.sun.com/jsf/facelets">
+<head>
+    <title>Tutorium</title>
+</head>
+<h:outputStylesheet name="primeicons/primeicons.css" library="primefaces"/>
+<h:body>
+    <ui:composition template="WEB-INF/template.xhtml">
+        <ui:define name="content">
+            <h:outputText value="Tutorium nicht gefunden oder keine Berechtigungen!"
+                          rendered="#{singleTutorialBean.tutorial == null or singleTutorialBean.role == null}"/>
+            <p:confirmDialog global="true">
+                <p:commandButton value="Ja" type="button" styleClass="ui-confirmdialog-yes" icon="pi pi-check"/>
+                <p:commandButton value="Nein" type="button" styleClass="ui-confirmdialog-no" icon="pi pi-times"/>
+            </p:confirmDialog>
+            <h:form id="form" rendered="#{singleTutorialBean.tutorial != null and singleTutorialBean.role != null}">
+                <p:menubar>
+                    <p:menuitem value="Veranstaltung" outcome="meeting.xhtml">
+                        <f:param name="meeting-Id" value="#{singleTutorialBean.meeting.id}"/>
+                    </p:menuitem>
+                    <p:submenu label="Tutorium">
+                        <p:menuitem value="Tutorium bearbeiten" outcome="edit-tutorial.xhtml">
+                            <f:param name="tutorial-Id" value="#{singleTutorialBean.tutorial.id}"/>
+                        </p:menuitem>
+                        <p:menuitem value="Tutorium löschen" action="#{singleTutorialBean.deleteTutorial}" rendered="#{singleTutorialBean.role != 'T'}">
+                            <p:confirm header="Bestätigung" message="Tutorium wirklich löschen? Bewertungen bleiben bestehen und sind weiterhin von Berechtigten einsehbar."
+                                       icon="pi pi-exclamation-triangle"/>
+                        </p:menuitem>
+                    </p:submenu>
+                    <p:submenu label="Gruppen">
+                        <p:menuitem value="Gruppe hinzufügen" outcome="add-group.xhtml">
+                            <f:param name="tutorial-Id" value="#{singleTutorialBean.tutorial.id}"/>
+                        </p:menuitem>
+                    </p:submenu>
+                    <p:submenu label="Teilnehmer">
+                        <p:menuitem value="Teilnehmer anlegen" outcome="add-participant.xhtml">
+                            <f:param name="tutorial-Id" value="#{singleTutorialBean.tutorial.id}"/>
+                        </p:menuitem>
+                    </p:submenu>
+                </p:menubar>
+                <p:panel header="Tutorium">
+                    <div class="ui-g">
+                        <div class="ui-g-4">
+                            <h:form id="tutors">
+                                <p:dataTable value="#{singleTutorialBean.tutors}" var="t" widgetVar="tuTable">
+                                    <p:column headerText="Tutoren">
+                                        <h:outputText value="#{t.firstName} #{t.lastName}"/>
+                                    </p:column>
+                                </p:dataTable>
+                            </h:form>
+                        </div>
+                        <div class="ui-g-4">
+                            <h:form id="groups">
+                                <p:dataTable value="#{singleTutorialBean.groups}" var="g" widgetVar="grTable">
+                                    <p:column headerText="Gruppen">
+                                        <p:link value="#{g.name}" outcome="group.xhtml">
+                                            <f:param name="group-Id" value="#{g.id}"/>
+                                        </p:link>
+                                    </p:column>
+                                </p:dataTable>
+                            </h:form>
+                        </div>
+                        <div class="ui-g-4">
+                            <h:form id="participants">
+                                <p:dataTable value="#{singleTutorialBean.participants}" var="p" widgetVar="paTable">
+                                    <p:column headerText="Teilnehmer">
+                                        <p:link value="#{p.firstName} #{p.lastName}"
+                                                outcome="participant-meeting.xhtml">
+                                            <f:param name="participant-Id" value="#{p.id}"/>
+                                            <f:param name="meeting-Id" value="#{singleTutorialBean.meeting.id}"/>
+                                        </p:link>
+                                    </p:column>
+                                </p:dataTable>
+                            </h:form>
+                        </div>
+                        <div class="ui-g-4">
+                            <h:form id="Abgaben">
+                                <p:dataTable value="#{singleTutorialBean.submissions}" var="s">
+                                    <p:column headerText="Abgaben">
+                                        <p:link value="#{s.name}" outcome="submission.xhtml">
+                                            <f:param name="submission-Id" value="#{s.id}"/>
+                                        </p:link>
+                                    </p:column>
+                                </p:dataTable>
+                            </h:form>
+                        </div>
+                    </div>
+                </p:panel>
+            </h:form>
+        </ui:define>
+    </ui:composition>
+</h:body>
+</html>

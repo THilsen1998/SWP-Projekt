@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+<h:head>
+    <title>Veranstaltungen</title>
+</h:head>
+
+<h:body>
+    <ui:composition template="WEB-INF/template.xhtml">
+        <ui:define name="content">
+            <h:form id="form">
+                <p:dataTable id="participants" value="#{finalGradesBean.participants}" var="p">
+                    <f:facet name="header">
+                        <div align="left">
+                            <p:commandButton id="toggler" type="button" value="Reihen" icon="pi pi-align-justify"/>
+                            <p:columnToggler trigger="toggler" datasource="participants">
+                                <p:ajax event="toggle" listener="#{finalGradesBean.onToggle}"/>
+                            </p:columnToggler>
+                            <p:button value="Zurück" outcome="meeting.xhtml">
+                                <f:param name="meeting-Id" value="#{finalGradesBean.meeting.id}"/>
+                            </p:button>
+                            <h:commandButton value="CSV Export"
+                                             rendered="#{finalGradesBean.role == 'A' || finalGradesBean.role == 'D'}">
+                                <p:dataExporter target="participants" type="csv" pageOnly="true" fileName="Noten"/>
+                            </h:commandButton>
+                        </div>
+                    </f:facet>
+                    <p:column headerText="MatrNr" exportable="#{finalGradesBean.boolList[0]}">
+                        <h:outputText value="#{p.matrikelNr}"/>
+                    </p:column>
+                    <p:column headerText="Vorname" exportable="#{finalGradesBean.boolList[1]}">
+                        <h:outputText value="#{p.firstName}"/>
+                    </p:column>
+                    <p:column headerText="Nachname" exportable="#{finalGradesBean.boolList[2]}">
+                        <h:outputText value="#{p.lastName}"/>
+                    </p:column>
+                    <p:column headerText="E-Mail" exportable="#{finalGradesBean.boolList[3]}" visible="#{finalGradesBean.boolList[3]}">
+                        <h:outputText value="#{p.email}"/>
+                    </p:column>
+                    <p:column headerText="Prüfungsnote" exportable="#{finalGradesBean.boolList[4]}">
+                        <h:outputText value="#{finalGradesBean.getEvaluation(p)}"/>
+                    </p:column>
+                    <p:column headerText="Abgabennote" exportable="#{finalGradesBean.boolList[5]}">
+                        <h:outputText value="#{finalGradesBean.getFinalGrade(p).submissionGrade}"/>
+                    </p:column>
+                    <p:column headerText="Gesamtnote" exportable="#{finalGradesBean.boolList[6]}">
+                        <h:outputText value="#{finalGradesBean.getFinalGrade(p).overallGrade}"/>
+                    </p:column>
+                </p:dataTable>
+            </h:form>
+        </ui:define>
+    </ui:composition>
+</h:body>
+</html>

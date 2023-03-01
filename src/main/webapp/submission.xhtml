@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+
+<h:head>
+    <title>Übersicht Abgabe</title>
+</h:head>
+<h:body>
+    <ui:composition template="WEB-INF/template.xhtml">
+        <ui:define name="content">
+
+            <h:outputText value="Unbekannte Abgabe"
+                          rendered="#{submissionBean.submission == null or submissionBean.role == null}"/>
+            <h:form rendered="#{submissionBean.submission != null and submissionBean.role != null}">
+                <p:growl id="growl" showDetail="true"/>
+                <p:confirmDialog global="true" showEffect="fade" hideEffect="fade" responsive="true">
+                    <p:commandButton value="Ja" type="button" styleClass="ui-confirmdialog-yes"/>
+                    <p:commandButton value="Nein" type="button" styleClass="ui-confirmdialog-no"/>
+                </p:confirmDialog>
+                <div class="ui-g-2"></div>
+                <div class="ui-g-8">
+                    <p:panel header="Abgabe">
+                        <p:button value="Zurück" outcome="meeting.xhtml">
+                            <f:param name="meeting-Id" value="#{submissionBean.meeting.id}"/>
+                        </p:button>
+                        <h:panelGrid columns="2">
+                            <p:outputLabel value="Name der Abgabe:"/>
+                            <h:outputText value="#{submissionBean.submission.name}"/>
+
+                            <p:outputLabel value="Datum der Abgabe:"/>
+                            <h:outputText value="#{submissionBean.submission.date}">
+                                <f:convertDateTime locale="de" pattern="dd.MM.yyyy"/>
+                            </h:outputText>
+
+                            <p:outputLabel value="Maximale Punkte der Abgabe:"/>
+                            <h:outputText value="#{submissionBean.submission.maxGrade}"/>
+
+                            <p:outputLabel value="Gewichtung der Abgabe:"/>
+                            <h:outputText value="#{submissionBean.submission.weighting}"/>
+
+                            <p:outputLabel value="Gruppenarbeit:"/>
+                            <h:outputText value="Ja" rendered="#{submissionBean.submission.groupWork}"/>
+                            <h:outputText value="Nein" rendered="#{!submissionBean.submission.groupWork}"/>
+
+                        </h:panelGrid>
+
+                        <p:button value="Abgabe bearbeiten" outcome="edit-submission.xhtml"
+                                  rendered="#{submissionBean.role != 'T'}">
+                            <f:param name="submission-Id" value="#{submissionBean.submission.id}"/>
+                        </p:button>
+                        <p:commandButton value="Abgabe löschen" action="#{submissionBean.deleteSubmission}"
+                                         rendered="#{submissionBean.role != 'T'}"
+                                         update="growl" styleClass="ui-button-danger">
+                            <p:confirm header="Abgabe löschen" message="Wollen Sie die Abgabe wirklich löschen?"
+                                       icon="pi pi-exclamation-triangle"/>
+                        </p:commandButton>
+                    </p:panel>
+
+                    <p:panel header="Zu bewerten">
+                        <h:form id="groups" rendered="#{submissionBean.submission.groupWork == true}">
+                            <p:dataTable value="#{submissionBean.groups}" var="g" widgetVar="grTable">
+                                <p:column headerText="Gruppen">
+                                    <p:link value="#{g.name}" outcome="group-evaluation.xhtml">
+                                        <f:param name="group-Id" value="#{g.id}"/>
+                                        <f:param name="submission-Id" value="#{submissionBean.submission.id}"/>
+                                    </p:link>
+                                </p:column>
+                            </p:dataTable>
+                        </h:form>
+
+
+                        <h:form id="participants" rendered="#{submissionBean.submission.groupWork != true}">
+                            <p:dataTable value="#{submissionBean.participants}" var="p" widgetVar="parTable">
+                                <p:column headerText="Teilnehmer">
+                                    <p:link value="#{p.firstName} #{p.lastName}"
+                                            outcome="participant-evaluation.xhtml">
+                                        <f:param name="participant-Id" value="#{p.id}"/>
+                                        <f:param name="submission-Id" value="#{submissionBean.submission.id}"/>
+                                    </p:link>
+                                </p:column>
+                            </p:dataTable>
+                        </h:form>
+                    </p:panel>
+                </div>
+            </h:form>
+        </ui:define>
+    </ui:composition>
+</h:body>
+</html>

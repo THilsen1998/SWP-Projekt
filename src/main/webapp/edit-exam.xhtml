@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+<h:head>
+    <title>Ändern einer Prüfung</title>
+</h:head>
+<h:body>
+    <ui:composition template="WEB-INF/template.xhtml">
+        <ui:define name="content">
+            <h:outputText value="Unkeannte Prüfung" rendered="#{editExamBean.role != 'D' and editExamBean.role != 'A'}"/>
+            <h:form rendered="#{editExamBean.role == 'A' or editExamBean.role == 'D'}">
+                <p:growl id="message" showDetail="true"/>
+                <p:panel header="Prüfung bearbeiten">
+                    <h:panelGrid columns="3">
+                        <p:outputLabel value="Name:"/>
+                        <p:inputText id="name"
+                                     value="#{editExamBean.exam.name}"/>
+                        <p:message for="name"/>
+
+                        <p:outputLabel value="Ort:"/>
+                        <p:inputText id="location"
+                                     value="#{editExamBean.exam.location}"/>
+                        <p:message for="location"/>
+
+                        <p:outputLabel value="Datum:"/>
+                        <p:calendar id="date" value="#{editExamBean.exam.date}" locale="de" navigator="true"
+                                    pattern="dd.MM.yyyy"/>
+                        <p:message for="date"/>
+
+                        <p:outputLabel value="Gewichtung:"/>
+                        <p:inputNumber id="weighting" value="#{editExamBean.exam.weighting}" minValue="0" maxValue="100"
+                                       emptyValue="0" symbol="%" symbolPosition="s"/>
+                        <p:message for="weighting"/>
+
+                    </h:panelGrid>
+                    <p:commandButton value="Aktualisieren"
+                                     action="#{editExamBean.update}"/>
+                    <p:button value="Abbrechen" outcome="exam-evaluation.xhtml">
+                        <f:param name="exam-Id" value="#{editExamBean.exam.id}"/>
+                    </p:button>
+
+                    <p:commandButton value="Löschen" action="#{editExamBean.deleteExam}" update="message">
+                        <p:confirm header="Bestätigung" message="Möchten Sie wirklich diese Prüfung löschen ?"
+                                   icon="pi pi-info-circle"/>
+                    </p:commandButton>
+
+                    <p:confirmDialog global="true" showEffect="fade" hideEffect="fade" responsive="true" width="350">
+                        <p:commandButton value="Ja" type="button" styleClass="ui-confirmdialog-yes"/>
+                        <p:commandButton value="Nein" type="button" styleClass="ui-confirmdialog-no ui-button-flat"/>
+                    </p:confirmDialog>
+                </p:panel>
+            </h:form>
+        </ui:define>
+    </ui:composition>
+</h:body>
+</html>

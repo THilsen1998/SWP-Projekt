@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui">
+
+<h:head>
+    <title>Login</title>
+</h:head>
+<h:body>
+    <div class="ui-g-4"></div>
+    <div class="ui-g-4">
+        <p:panel header="Login">
+            <h:form>
+                <h:panelGrid columns="3">
+                    <h:outputLabel value="E-Mail:" />
+                    <p:inputText id="email"
+                                 value="#{loginBean.email}" />
+                    <h:message for="email" />
+
+                    <h:outputLabel value="Passwort:" />
+                    <p:password id="password" value="#{loginBean.password}" />
+                    <h:message for="password" />
+                </h:panelGrid>
+                <h:messages globalOnly="true" />
+                <p:commandButton value="Anmelden" action="#{loginBean.login}" ajax="false"/>
+                <p:button id="submit" value="Passwort zurücksetzten ?"
+                                 onclick="return alert('Bitte wenden Sie sich an den Admin des Systems.');"/>
+            </h:form>
+        </p:panel>
+    </div>
+    <div class="ui-g-4"></div>
+</h:body>
+</html>

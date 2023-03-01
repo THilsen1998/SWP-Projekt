@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+<h:head>
+    <title>Hinzufügen einer Teilnehmer*in</title>
+</h:head>
+<h:body>
+    <ui:composition template="WEB-INF/template.xhtml">
+        <ui:define name="content">
+            <h:outputText value="Eine Prüfung kann nur zu einer bestehenden Veranstaltung hinzugefügt werden"
+                          rendered="#{addExamBean.exam == null}"/>
+            <h:form rendered="#{addExamBean.exam != null}">
+                <p:growl id="growl" showDetail="true"/>
+                <p:panel header="Neue Prüfung erstellen :">
+
+                    <h:panelGrid columns="3">
+                        <p:outputLabel value="Name: "/>
+                        <p:inputText id="first-name"
+                                     value="#{addExamBean.exam.name}"/>
+                        <p:message for="first-name"/>
+
+                        <p:outputLabel value="Ort: "/>
+                        <p:inputText id="last-name"
+                                     value="#{addExamBean.exam.location}"/>
+                        <p:message for="last-name"/>
+
+                        <p:outputLabel value="Datum: "/>
+                        <p:calendar id="date" value="#{addExamBean.exam.date}" locale="de" navigator="true"
+                                    pattern="dd.MM.yyyy"/>
+                        <p:message for="date"/>
+
+                        <p:outputLabel value="Gewichtung: "/>
+                        <p:inputNumber minValue="0" maxValue="100" symbol="%" symbolPosition="s" id="weighting"
+                                       value="#{addExamBean.exam.weighting}"/>
+                        <p:message for="weighting"/>
+
+                    </h:panelGrid>
+                    <p:messages globalOnly="true"/>
+                    <p:commandButton value="Hinzufügen"
+                                     action="#{addExamBean.createExam}" ajax="false" update="growl"/>
+                    <p:button value="Abbrechen" outcome="meeting.xhtml?meeting-Id=">
+                        <f:param name="meeting-Id" value="#{addExamBean.meeting.id}"/>
+                    </p:button>
+
+                </p:panel>
+            </h:form>
+        </ui:define>
+    </ui:composition>
+</h:body>
+</html>

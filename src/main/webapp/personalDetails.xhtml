@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+
+<h:head>
+    <title>Persönliche Einstellung ändern</title>
+</h:head>
+<h:body>
+    <ui:composition template="WEB-INF/template.xhtml">
+        <ui:define name="content">
+            <!--            &lt;!&ndash; Der Ausgewählte User muss != null sein damit man weiß wer editiert wird&ndash;&gt;
+                        <h:outputText value="Unbekannte Teilnehmer*in"
+                                      rendered="#{loginBean.currentUser == null}"/>-->
+            <h:form id="form">
+                <div class="ui-g-6">
+                    <p:growl id="growl" showDetail="true"/>
+                    <p:panel header="Daten">
+                        <p:panelGrid columns="2" styleClass="ui-noborder">
+                            <h:outputText value="Vorname: "/>
+                            <p:inputText value="#{editPersonalBean.user.firstName}" disabled="true"/>
+
+                            <h:outputText value="Nachname: "/>
+                            <p:inputText value="#{editPersonalBean.user.lastName}" disabled="true"/>
+                        </p:panelGrid>
+                        <p:staticMessage severity="INFO" summary="INFO"
+                                         detail="Das neue Password wird '#{editPersonalBean.user.firstName}.#{editPersonalBean.user.lastName}' sein"/>
+                        <p:panelGrid columns="1" styleClass="ui-noborder">
+                            <p:commandButton value="Password zurücksetzen" action="#{editPersonalBean.restPw}"
+                                             ajax="false" update="growl"/>
+                            <p:button value="Abbrechen" outcome="home.xhtml"/>
+                        </p:panelGrid>
+                    </p:panel>
+                </div>
+                <div class="ui-g-6">
+                    <p:panel header="Passwort ändern">
+                        <p:panelGrid columns="3" styleClass="ui-noborder">
+                            <p:outputLabel value="Altes Passwort"/>
+                            <p:inputText id="olPw" value="#{editPersonalBean.oldPassword}"/>
+                            <p:message for="olPw"/>
+
+                            <p:outputLabel value="Neues Passwort"/>
+                            <p:inputText id="newPw1" value="#{editPersonalBean.newPassWord1}"/>
+                            <p:message for="newPw1"/>
+
+                            <p:outputLabel value="Passwort bestätigen"/>
+                            <p:inputText id="newPw2" value="#{editPersonalBean.newPassWord2}"/>
+                            <p:message for="newPw1"/>
+                        </p:panelGrid>
+                        <p:commandButton value="Passwort ändern" action="#{editPersonalBean.setNewPassword}"
+                                         update="growl" ajax="false"/>
+                    </p:panel>
+                </div>
+            </h:form>
+        </ui:define>
+    </ui:composition>
+</h:body>
+</html>

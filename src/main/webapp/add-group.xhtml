@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+
+<h:head>
+    <title>Hinzufuegen einer Gruppe</title>
+</h:head>
+<h:body>
+    <ui:composition template="WEB-INF/template.xhtml">
+        <ui:define name="content">
+            <h:outputText value="Eine Gruppe kann nur zu einem bestehenden Tutorium hinzugefügt werden"
+                          rendered="#{addGroupBean.role == null || (addGroupBean.role != 'A' and addGroupBean.role != 'D' and not addGroupBean.meeting.visible)}"/>
+            <h:form rendered="#{addGroupBean.role != null and addGroupBean.role == 'A' || addGroupBean.role == 'D' || addGroupBean.meeting.visible}">
+                <p:panel header="Neue Gruppe erstellen  :">
+                    <h:form>
+                        <p:growl id="growl" showDetail="true" life="7000"/>
+                        <h:panelGrid columns="2">
+                            <p:commandButton value="Hinzufügen"
+                                             action="#{addGroupBean.createGroup}" ajax="false" update="growl"/>
+                            <p:button value="Abbrechen"
+                                      outcome="single-tutorial.xhtml?tutorial-Id=#{addGroupBean.tutorial.id}"/>
+                        </h:panelGrid>
+                        <p:panelGrid columns="3" styleClass="ui-noborder">
+                            <p:outputLabel value="Name:"/>
+                            <p:inputText id="name"
+                                         value="#{addGroupBean.group.name}"/>
+                            <p:message for="name"/>
+
+                            <p:outputLabel value="Maximale Personenanzahl:"/>
+                            <p:inputText id="maxPa"
+                                         value="#{addGroupBean.group.maxPa}"/>
+                            <p:message for="maxPa"/>
+
+                            <p:outputLabel value="Nummer:"/>
+                            <p:inputNumber id="number"
+                                           value="#{addGroupBean.group.number}"/>
+                            <p:message for="number"/>
+                        </p:panelGrid>
+                    </h:form>
+                </p:panel>
+            </h:form>
+
+            <p:accordionPanel id="accord" activeIndex="null"
+                              rendered="#{addGroupBean.role != null and addGroupBean.role == 'A' || addGroupBean.role == 'D' || addGroupBean.meeting.visible}">
+                <p:tab title="Teilnehmer hinzufügen">
+                    <div class="ui-g-6">
+                        <h:form id="form3">
+                            <p:dataTable value="#{addGroupBean.participantsInTutorial}" var="p" id="participants"
+                                         widgetVar="parTable"
+                                         filteredValue="#{addGroupBean.filteredParticipantsInTutorial}"
+                                         rows="10"
+                                         paginator="true"
+                                         paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                         currentPageReportTemplate="{startRecord}-{endRecord} von {totalRecords} Teilnehmer">
+                                <p:column headerText="Teilnehmer im Tutorium" sortBy="#{p.firstName} #{p.lastName}"
+                                          filterBy="#{p.firstName} #{p.lastName} " filterMatchMode="contains">
+                                    <h:outputText value="#{p.firstName} #{p.lastName}"/>
+                                </p:column>
+                                <p:column style="width: 30px">
+                                    <p:commandButton value="+" id="nonAjax1"
+                                                     action="#{addGroupBean.addParticipant(p)}"
+                                                     style="margin-right:20px;" ajax="true"
+                                                     update="participants :accord:form4:participantsToAdd">
+                                    </p:commandButton>
+                                </p:column>
+                            </p:dataTable>
+                        </h:form>
+                    </div>
+
+                    <div class="ui-g-6">
+                        <h:form id="form4">
+                            <p:dataTable value="#{addGroupBean.participantsToAdd}" var="p" id="participantsToAdd"
+                                         filteredValue="#{addGroupBean.filteredParticipantsToAdd}"
+                                         widgetVar="parToAddTable"
+                                         rows="10"
+                                         paginator="true"
+                                         paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                         currentPageReportTemplate="{startRecord}-{endRecord} von {totalRecords} Teilnehmer">
+                                <p:column headerText="Teilnehmer in der Gruppe" sortBy="#{p.firstName} #{p.lastName}"
+                                          filterBy="#{p.firstName} #{p.lastName}" filterMatchMode="contains">
+                                    <h:outputText value="#{p.firstName } #{p.lastName}"/>
+                                </p:column>
+                                <p:column style="width: 30px">
+                                    <p:commandButton value="-" id="nonAjax2"
+                                                     action="#{addGroupBean.deleteParticipant(p)}"
+                                                     style="margin-right:20px;" ajax="true"
+                                                     update="participantsToAdd :accord:form3:participants">
+                                    </p:commandButton>
+                                </p:column>
+                            </p:dataTable>
+                        </h:form>
+                    </div>
+                </p:tab>
+            </p:accordionPanel>
+        </ui:define>
+    </ui:composition>
+</h:body>
+</html>
+

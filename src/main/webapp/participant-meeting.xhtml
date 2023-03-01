@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+<head>
+    <title>Teilnehmer-Veranstaltung</title>
+</head>
+<h:outputStylesheet name="primeicons/primeicons.css" library="primefaces"/>
+<h:body>
+    <ui:composition template="WEB-INF/template.xhtml">
+        <ui:define name="content">
+            <h:outputText value="Keine Rechte oder Veranstaltung nicht gefunden" rendered="#{participantMeetingBean.role == null}"/>
+            <h:form id="form" rendered="#{participantMeetingBean.role != null and participantMeetingBean.meeting != null}">
+                <p:growl id="growl" showDetail="true"/>
+                <p:menubar>
+                    <p:menuitem value="Veranstaltung" outcome="meeting.xhtml">
+                        <f:param name="meeting-Id" value="#{participantMeetingBean.meeting.id}"/>
+                    </p:menuitem>
+                </p:menubar>
+                <div class="ui-g-6">
+                    <p:panel header="Teilnehmer" id="firstPanel">
+                        <p:panelGrid columns="2" styleClass="ui-noborder">
+                            <p:outputLabel value="Vorname: "/>
+                            <h:outputText value="#{participantMeetingBean.participant.firstName}"/>
+
+                            <p:outputLabel value="Nachname: "/>
+                            <h:outputText value="#{participantMeetingBean.participant.lastName}"/>
+
+                            <p:outputLabel value="Email: "/>
+                            <h:outputText value="#{participantMeetingBean.participant.email}"/>
+
+                            <p:outputLabel value="Matrikelnummer: "/>
+                            <h:outputText value="#{participantMeetingBean.participant.matrikelNr}"/>
+
+                            <p:outputLabel value="Semester: "/>
+                            <h:outputText value="#{participantMeetingBean.participant.semester}"/>
+
+                            <p:outputLabel value="Status: "/>
+                            <p:selectOneMenu value="#{participantMeetingBean.status.meetingStatus}">
+                                <f:selectItem itemLabel="anwesend" itemValue="Anwesend"/>
+                                <f:selectItem itemLabel="abwesend" itemValue="Abwesend"/>
+                                <f:selectItem itemLabel="bestanden" itemValue="Bestanden"/>
+                                <f:selectItem itemLabel="durchgefallen" itemValue="Durchgefallen"/>
+                            </p:selectOneMenu>
+                        </p:panelGrid>
+                    </p:panel>
+                </div>
+                <div class="ui-g-6">
+                    <p:panel header="Gesamtnoten">
+                        <p:commandButton value="Speichern" action="#{participantMeetingBean.createFinalGrade}"
+                                         update="growl"
+                                         rendered="#{participantMeetingBean.role == 'D' || participantMeetingBean.role == 'A'}"/>
+                        <p:panelGrid columns="3" styleClass="ui-noborder">
+                            <p:outputLabel value="Gesamtnote:"/>
+                            <p:inputNumber id="finalGrade" emptyValue="0" required="true" minValue="0" maxValue="5"
+                                           value="#{participantMeetingBean.finalGrade.overallGrade}"
+                                           disabled="#{participantMeetingBean.role != 'D' and participantMeetingBean.role != 'A'}"/>
+                            <p:message for="finalGrade"/>
+                        </p:panelGrid>
+                        <p:panelGrid columns="4" styleClass="ui-noborder">
+                            <p:outputLabel value="Prüfungsnote:"/>
+                            <h:outputText value="#{participantMeetingBean.examGrade.grade}"/>
+                            <p:outputLabel value="Gewichtung:"/>
+                            <h:outputText value="#{participantMeetingBean.exam.weighting} %"/>
+
+                            <p:outputLabel value="Abagbenote:"/>
+                            <p:inputNumber
+                                    disabled="#{participantMeetingBean.role != 'D' and participantMeetingBean.role != 'A'}"
+                                    minValue="0" maxValue="5" emptyValue="0"
+                                    value="#{participantMeetingBean.finalGrade.submissionGrade}"
+                                    required="true"/>
+                            <p:outputLabel value="Gewichtung:"/>
+                            <h:outputText value="#{participantMeetingBean.meeting.submissionWeighting} %"/>
+                        </p:panelGrid>
+                        <p:commandButton value="Gesamtnote berechnen"
+                                         action="#{participantMeetingBean.setFinalOrSubGradeTrue}"
+                                         update=":form:finalCalc"
+                                         oncomplete="PF('dialog').show()"
+                                         rendered="#{participantMeetingBean.role == 'D' || participantMeetingBean.role == 'A'}">
+                            <p:resetInput target=":form:finalCalc"/>
+                        </p:commandButton>
+                        <p:commandButton value="Abgabenote berechnen"
+                                         action="#{participantMeetingBean.setFinalOrSubGradeFalse}"
+                                         update=":form:finalCalc"
+                                         oncomplete="PF('dialog').show()"
+                                         rendered="#{participantMeetingBean.role == 'D' || participantMeetingBean.role == 'A'}">
+                            <p:resetInput target=":form:finalCalc"/>
+                        </p:commandButton>
+                    </p:panel>
+                </div>
+                <div class="ui-g-12">
+                    <p:dataTable value="#{participantMeetingBean.evaluations}" var="e" id="evaluations">
+                        <f:facet name="header">
+                            <h:outputText
+                                    value="#{participantMeetingBean.evaluations.size()} / #{participantMeetingBean.submissionCount} Abgaben bewertet"/>
+                        </f:facet>
+                        <p:column headerText="Abgabe">
+                            <h:outputText value="#{e.submission.name}"/>
+                        </p:column>
+                        <p:column headerText="Gewichtung">
+                            <h:outputText value="#{e.submission.weighting}"/>
+                        </p:column>
+                        <p:column headerText="Punkte">
+                            <h:outputText value="#{e.points} / #{e.submission.maxGrade}"/>
+                        </p:column>
+                        <p:column headerText="Note">
+                            <h:outputText value="#{e.grade}"/>
+                        </p:column>
+                    </p:dataTable>
+                </div>
+                <p:dialog rendered="#{participantMeetingBean.role == 'D' || participantMeetingBean.role == 'A'}"
+                          header="Note berechnen" widgetVar="dialog" showEffect="fade" modal="true"
+                          responsive="true">
+                    <p:outputPanel id="finalCalc" styleClass="ui-fluid">
+                        <p:panelGrid columns="1" styleClass="ui-noborder">
+                            <p:outputLabel value="Berechnung durch Teilnoten oder Punkte:"/>
+                            <p:selectOneRadio value="#{participantMeetingBean.gradesOrPoints}" unselectable="false"
+                                              required="true">
+                                <p:ajax event="change" update=":form:finalCalc"/>
+                                <f:selectItem itemLabel="Noten" itemValue="true"/>
+                                <f:selectItem itemLabel="Punkte" itemValue="false"/>
+                            </p:selectOneRadio>
+                        </p:panelGrid>
+                        <p:outputLabel value="Neuberechnung der Noten?"
+                                       rendered="#{participantMeetingBean.gradesOrPoints}"/>
+                        <p:panelGrid columns="1" styleClass="ui-noborder"
+                                     rendered="#{participantMeetingBean.gradesOrPoints}">
+                            <p:selectOneRadio value="#{participantMeetingBean.newCalc}" unselectable="false"
+                                              required="true">
+                                <f:selectItem itemLabel="Ja" itemValue="true"/>
+                                <f:selectItem itemLabel="Nein" itemValue="false"/>
+                            </p:selectOneRadio>
+                        </p:panelGrid>
+                        <p:panelGrid columns="1" styleClass="ui-noborder">
+                            <p:selectOneRadio value="#{participantMeetingBean.anyOrPercent}" unselectable="false">
+                                <f:selectItem itemLabel="Teilnoten beliebig" itemValue="true"/>
+                                <f:selectItem itemLabel="Teilnoten >= n%" itemValue="false"/>
+                                <p:ajax event="change" update=":form:finalCalc"/>
+                            </p:selectOneRadio>
+                        </p:panelGrid>
+                        <p:panelGrid columns="3" styleClass="ui-noborder"
+                                     rendered="#{not participantMeetingBean.anyOrPercent}">
+                            <p:outputLabel value="n%:"/>
+                            <p:inputNumber value="#{participantMeetingBean.NPercentage}" minValue="0" maxValue="100"
+                                           emptyValue="50" symbol="%" symbolPosition="s"/>
+                            <p:selectBooleanCheckbox value="#{participantMeetingBean.NMinus1}" itemLabel="n-1"/>
+                        </p:panelGrid>
+                    </p:outputPanel>
+                    <f:facet name="footer">
+                        <p:commandButton value="Berechnen" icon="pi pi-check"
+                                         actionListener="#{participantMeetingBean.calculateFinalGrade}"
+                                         process="finalCalc @this" onclick="PF('dialog').hide()" update="form"/>
+                    </f:facet>
+                </p:dialog>
+            </h:form>
+        </ui:define>
+    </ui:composition>
+</h:body>
+</html>

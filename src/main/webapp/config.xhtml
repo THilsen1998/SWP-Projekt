@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+<h:head>
+    <title>Title</title>
+</h:head>
+<h:body>
+    <ui:composition template="WEB-INF/template.xhtml">
+        <ui:define name="content">
+            <h:form>
+                <p:growl id="growl" showDetail="true"/>
+                <p:panel header="Backup" id="backup">
+                    <p:panelGrid columns="2">
+                        <p:outputLabel value="Erstellt am:"/>
+                        <h:outputText value="#{configBean.attributes.lastModifiedTime()}"/>
+                        <p:outputLabel value="Größe: "/>
+                        <h:outputText value="#{configBean.attributes.size()} Bytes"/>
+                    </p:panelGrid>
+                    <p:commandButton value="Backup erstellen" action="#{configBean.createBackUp}" update="backup growl">
+                        <p:confirm header="Bestätigung" message="Wollen sie ein Backup erstellen und das alte löschen?"
+                                   icon="pi pi-info-circle"/>
+                    </p:commandButton>
+                    <p:commandButton value="Backup einspielen" action="#{configBean.insertBackUp}"
+                                     update="backup growl">
+                        <p:confirm header="Bestätigung"
+                                   message="Backup wirklich einspielen? Alle Daten werden zurückgesetzt und Sie werden ausgeloggt."
+                                   icon="pi pi-info-circle"/>
+                    </p:commandButton>
+                    <p:confirmDialog global="true" showEffect="fade" hideEffect="fade" responsive="true">
+                        <p:commandButton value="Ja" type="button" styleClass="ui-confirmdialog-yes"/>
+                        <p:commandButton value="Nein" type="button" styleClass="ui-confirmdialog-no ui-button-flat"/>
+                    </p:confirmDialog>
+                </p:panel>
+            </h:form>
+        </ui:define>
+    </ui:composition>
+</h:body>
+</html>

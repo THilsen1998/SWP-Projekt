@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+
+<h:head>
+    <title>Ändern eines Nutzers</title>
+</h:head>
+<h:body>
+    <ui:composition template="WEB-INF/template.xhtml">
+        <ui:define name="content">
+            <!-- Der Ausgewählte User muss != null sein damit man weiß wer editiert wird
+             <h:outputText value="Unbekannte Teilnehmer*in"
+                          rendered="#{editUserBean.user == null}"/>
+            <h:form rendered="#{editUserBean.user != null}">-->
+            <h:form>
+                <p:dataTable value="#{usersBean.users}" var="u" id="user" rows="10"
+                             paginator="true"
+                             paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                             currentPageReportTemplate="{startRecord}-{endRecord} von {totalRecords} Teilnehmern"
+                             rowsPerPageTemplate="5,10,15,20,{ShowAll|'All'}"
+                             widgetVar="parTable"
+                             filteredValue="#{usersBean.filteredUsers}">
+                    <p:column headerText="Vorname" sortBy="#{u.firstName}" filterBy="#{u.firstName}"
+                              filterMatchMode="contains">
+                        <h:outputText value="#{u.firstName}"/>
+                    </p:column>
+                    <p:column headerText="Nachname" sortBy="#{u.lastName}" filterBy="#{u.lastName}"
+                              filterMatchMode="contains">
+                        <h:outputText value="#{u.lastName}"/>
+                    </p:column>
+                    <p:column headerText="E-Mail" sortBy="#{u.email}" filterBy="#{u.email}"
+                              filterMatchMode="contains">
+                        <h:outputText value="#{u.email}"/>
+                    </p:column>
+                    <p:column>
+                        <div style="text-align: center">
+                            <p:button value="Ändern" outcome="edit-user.xhtml">
+                                <f:param name="user-Id" value="#{u.id}"/>
+                            </p:button>
+                        </div>
+                    </p:column>
+                </p:dataTable>
+            </h:form>
+        </ui:define>
+    </ui:composition>
+</h:body>
+</html>
